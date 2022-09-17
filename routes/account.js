@@ -5,20 +5,10 @@ let router = express.Router();
 
 //opening express account
 router.post('/createaccount', (req, res)=>{
-    console.log(req.body);
   let bank = "ecobank";
    if (bank === 'ecobank'){
-       let {firstName, lastname, mobileNo, gender, identityNo, identityType, IDIssueDate, IDExpiryDate, ccy, country, branchCode, datetime, countryOfResidence, email, city, state, stree, secureHash} = req.body;
-       ecobank.createAccount(firstName, lastname, mobileNo, gender, identityNo, identityType, IDIssueDate, IDExpiryDate, ccy, country, branchCode, datetime, countryOfResidence, email, city, state, stree, secureHash);
-       if (ecobank.createAccount) {
-           res.status(200).json({
-               message: 'account created successfully'
-           })
-       }else {
-           res.status(500).json({
-               message: 'error creating account'
-           })
-       }
+       let {firstName, lastname, mobileNo, gender, identityNo, identityType, IDIssueDate, IDExpiryDate, ccy, country, branchCode, datetime, countryOfResidence, email, city, state, street, secureHash} = req.body;
+           ecobank.createAccount(firstName, lastname, mobileNo, gender, identityNo, identityType, IDIssueDate, IDExpiryDate, ccy, country, branchCode, datetime, countryOfResidence, email, city, state, street, secureHash)
    }
    else if (bank === 'zenith') {
        //zenith bank api

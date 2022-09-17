@@ -1,7 +1,8 @@
-const mongoose = require('mongoose');
-const tokenSchema = mongoose.Schema({
-    "token": {
-        type: String,
+let mongoose = require('mongoose');
+let Schema = mongoose.Schema;
+let tokenSchema = new Schema({
+    token: {
+        type:String
     },
     createdAt: {
         type: Date,

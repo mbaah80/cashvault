@@ -18,6 +18,12 @@ const accountBalanceSchema = mongoose.Schema({
     "secureHash": {
         type: String,
     },
+    balance:{
+      type: String
+    },
+    previousbalance:{
+        type:String
+    },
     createdAt: {
         type: Date,
         default: Date.now
