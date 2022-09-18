@@ -65,9 +65,14 @@ let tokenEndpoint = ''
 
 getsecureHarsh = function(){}
 
+// return errors
 
+responseMessages = function (res, next, message, status, data) {
+    console.log(message)
+}
 //opening express account
- exports.createAccount = function ( firstName, lastname, mobileNo, gender, identityNo, identityType, IDIssueDate, IDExpiryDate, currency, country, branchCode, createdAt, country, email, city, state, street, address){
+
+ exports.createAccount = function (bank, requestId,affiliateCode, firstName, lastname, mobileNo, gender, identityNo, identityType, IDIssueDate, IDExpiryDate, ccy, country, branchCode,datetime, countryOfResidence, email, city, state, street, secureHash){
      let accUrl = '/corporateapi/merchant/createexpressaccount'
      let tokenUrl = '/corporateapi/user/token'
      let body = {
@@ -75,8 +80,9 @@ getsecureHarsh = function(){}
          "password": config.password
      }
      let payload = {
+         "bank": bank,
          "requestId": 'ECO76383823', //+ UserId, will check user id first
-         "affiliateCode": "EGH",
+         "affiliateCode": affiliateCode,
          "firstName": firstName,
          "lastname": lastname,
          "mobileNo": mobileNo,
@@ -85,16 +91,16 @@ getsecureHarsh = function(){}
          "identityType": identityType,
          "IDIssueDate": IDIssueDate,
          "IDExpiryDate": IDExpiryDate,
-         "ccy": currency,
+         "ccy": ccy,
          "country": country,
-         "branchCode": "EGH",
-         "datetime": createdAt,
-         "countryOfResidence": address,
+         "branchCode": branchCode,
+         "datetime": datetime,
+         "countryOfResidence": countryOfResidence,
          "email": email,
          "city": city,
          "state": state,
          "street": street,
-         "secureHash": "a43aa74662060b7b9c942dd7ace565a0919118db758bcd71a0f5c7cd7e349f6309b02866b6156ef9171a1b23119c71e77db2edd38cc89963d7f34b541d6dc461"
+         "secureHash": secureHash
      }
      axios.post(baseUrl + tokenUrl, body,{
          headers: {
@@ -104,36 +110,74 @@ getsecureHarsh = function(){}
          }
      }).then((response)=>{
          if (response.data.token){
-             axios.post(baseUrl + accUrl, payload,{
-                 headers: {
-                     Origin: "developer.ecobank.com",
-                     "Content-Type": "application/json",
-                     Accept: "application/json",
-                     Authorization:"Bearer " + response.data.token
+            accountOpening.findOne({identityNo: identityNo} , (err, user)=>{
+                 if (err){
+                     console.log(err, 'error');
                  }
-             }).then((response)=>{
-                 if(response.status === 403){
-                  console.log('Account already exist or invalid details', response.data)
-                 }else if(response.status === 200){
-                     console.log('Account created successfully', response.data)
-                     let account = new accountOpening({
-                         accountDetails: response.data,
-                         userInformation: payload
-                     })
-                     account.save((response, err)=>{
-                         if(err) {
-                             throw err
-                         }else{
-                             console.log('account open successfully', response)
-                         }
-                     });
-                     // statusText: 'OK',
+                 if (user){
+                     console.log('account already exist');
+                     return false
                  }else{
-                     console.log('Account not created')
-                 }
+                     axios.post(baseUrl + accUrl, payload,{
+                         headers: {
+                             Origin: "developer.ecobank.com",
+                             "Content-Type": "application/json",
+                             Accept: "application/json",
+                             Authorization:"Bearer " + response.data.token
+                         }
+                     }).then((response)=>{
+                         if(response.status === 403){
+                             // console.log('Account already exist or invalid details')
+                             // res.status(403).json({
+                             //        message: 'Account already exist or internal server error',
+                             //        status: 403,
+                             //        data: response.data
+                             // })
+                         }else if(response.status === 200){
+                             console.log('Account created successfully', response.data)
 
-             }).catch((err)=>{
-                 console.log(err);
+                             let account = new accountOpening({
+                                 accountDetails: response.data,
+                                 "bank": bank,
+                                 "requestId": 'ECO76383823',
+                                 "affiliateCode": affiliateCode,
+                                 "firstName": firstName,
+                                 "lastname": lastname,
+                                 "mobileNo": mobileNo,
+                                 "gender": gender,
+                                 "identityNo": identityNo,
+                                 "identityType": identityType,
+                                 "IDIssueDate": IDIssueDate,
+                                 "IDExpiryDate": IDExpiryDate,
+                                 "ccy": ccy,
+                                 "country": country,
+                                 "branchCode": branchCode,
+                                 "datetime": datetime,
+                                 "countryOfResidence": countryOfResidence,
+                                 "email": email,
+                                 "city": city,
+                                 "state": state,
+                                 "street": street,
+                                 "secureHash": secureHash
+                             })
+                             account.save().then((account)=>{
+                                 console.log('account saved successfully db', account)
+                             }).catch((err)=>{
+                                 console.log(err)
+                             })
+                             // statusText: 'OK',
+                         }else{
+                             console.log('Account not created')
+                             return {
+                                 status: 500,
+                                 message: 'Account not created',
+                             }
+                         }
+
+                     }).catch((err)=>{
+                         console.log(err);
+                     })
+                 }
              })
          }else{
              console.log('token not yet in')
@@ -144,9 +188,9 @@ getsecureHarsh = function(){}
 }
 
 //account balance
-exports.accountbalance = function (requestId,affiliateCode,accountNo, clientId, companyName, secureHash, token){
-    getToken()
+exports.accountBalance = function (requestId,affiliateCode,accountNo, clientId, companyName, secureHash){
      let accUrl = '/corporateapi/merchant/accountbalance'
+     let tokenUrl = '/corporateapi/user/token'
      let payload = {
           "requestId": requestId,
           "affiliateCode": affiliateCode,
@@ -155,25 +199,44 @@ exports.accountbalance = function (requestId,affiliateCode,accountNo, clientId, 
           "companyName": companyName,
           "secureHash": secureHash
      }
-      axios.post(baseUrl + accUrl, payload,{
-          headers: {
-                Origin: "developer.ecobank.com",
-                "Content-Type": "application/json",
-                Accept: "application/json",
-                Authorization:"Bearer " + token
-          }
-      }).then((response)=>{
-          let balance = new accountBalance()
-            balance.save((balance, err)=>{
-                if(err) {
-                    throw err
-                }else{
-                    console.log('account balance successfully', balance)
+
+    let body = {
+        "userId": config.userId,
+        "password": config.password
+    }
+    axios.post(baseUrl + tokenUrl, body,{
+        headers: {
+            Origin: "developer.ecobank.com",
+            "Content-Type": "application/json",
+            Accept: "application/json",
+        }
+    }).then((response)=>{
+        if (response.data.token){
+            axios.post(baseUrl + accUrl, payload,{
+                headers: {
+                    Origin: "developer.ecobank.com",
+                    "Content-Type": "application/json",
+                    Accept: "application/json",
+                    Authorization:"Bearer " + response.data.token
                 }
+            }).then((response)=>{
+                let balance = new accountBalance()
+                balance.save((balance, err)=>{
+                    if(err) {
+                        throw err
+                    }else{
+                        console.log('account balance successfully', balance)
+                    }
+                })
+            }).catch((err)=>{
+                console.log(err);
             })
-      }).catct((err)=>{
-          console.log(err);
-      })
+        }else{
+            console.log('token not yet in')
+        }
+    }).catch((err)=>{
+        console.log(err);
+    })
 
 }
 
@@ -211,7 +274,7 @@ exports.accountStatement = function (corporateId,affiliateCode,accountNumber, st
 }
 
 //account payment
-exports.accountPayment = function (affiliateCode, secureHash, clientid,amount,currency,rate_type, batchsequence,batchamount,transactionamount,batchid,transactioncount,batchcount, transactionid,debittype,totalbatches, execution_date, request_id, request_type, token ){
+exports.accountPayment = function (affiliateCode, secureHash, clientId,amount,currency,rate_type, batchSequence,batchAmount,transactionAmount,batchid,transactioncount,batchcount, transactionid,debittype,totalbatches, execution_date, request_id, request_type, token ){
     getToken()
  let accUrl = '/corporateapi/merchant/payment'
     let payload = {

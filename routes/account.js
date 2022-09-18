@@ -3,12 +3,25 @@ let ecobank = require('../apis/unifiedApi');
 
 let router = express.Router();
 
+
 //opening express account
 router.post('/createaccount', (req, res)=>{
   let bank = "ecobank";
    if (bank === 'ecobank'){
-       let {firstName, lastname, mobileNo, gender, identityNo, identityType, IDIssueDate, IDExpiryDate, ccy, country, branchCode, datetime, countryOfResidence, email, city, state, street, secureHash} = req.body;
-           ecobank.createAccount(firstName, lastname, mobileNo, gender, identityNo, identityType, IDIssueDate, IDExpiryDate, ccy, country, branchCode, datetime, countryOfResidence, email, city, state, street, secureHash)
+       try {
+           let {bank, requestId,affiliateCode, firstName, lastname, mobileNo, gender, identityNo, identityType, IDIssueDate, IDExpiryDate, ccy, country, branchCode, datetime, countryOfResidence , email, city, state, street, secureHash} = req.body;
+           ecobank.createAccount(bank, requestId,affiliateCode, firstName, lastname, mobileNo, gender, identityNo, identityType, IDIssueDate, IDExpiryDate, ccy, country, branchCode,datetime, countryOfResidence, email, city, state, street, secureHash)
+           if (ecobank.createAccount){
+               res.send(ecobank.createAccount.response)
+           }else{
+                res.send("error")
+           }
+
+       }catch (error) {
+            res.status(500).json({
+                message: error.message
+            })
+       }
    }
    else if (bank === 'zenith') {
        //zenith bank api
