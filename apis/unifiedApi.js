@@ -41,20 +41,6 @@ let tokenEndpoint = ''
     }).then((response)=>{
         if (response){
             tokenEndpoint = response.data.token
-            console.log(tokenEndpoint, 'token function tokenEndpoint')
-        //     let user = new tokenSchema({
-        //         token: response.data.token
-        //     })
-        //     user.save((user, err)=>{
-        //         if(err) {
-        //             throw err
-        //         }else{
-        //             console.log('token saved successfully', user)
-        //         }
-        //     })
-        // }else{
-        //     console.log('token not yet in')
-        // }
  }
 
     }).catch((err)=>{
@@ -108,7 +94,8 @@ responseMessages = function (res, next, message, status, data) {
              "Content-Type": "application/json",
              Accept: "application/json",
          }
-     }).then((response)=>{
+     })
+         .then((response)=>{
          if (response.data.token){
             accountOpening.findOne({identityNo: identityNo} , (err, user)=>{
                  if (err){
@@ -242,7 +229,6 @@ exports.accountBalance = function (requestId,affiliateCode,accountNo, clientId, 
 
 //account statement
 exports.accountStatement = function (corporateId,affiliateCode,accountNumber, startDate, endDate, secureHash, token, userID){
-    getToken()
     let accUrl = '/corporateapi/merchant/statement'
     let payload = {
         "corporateId": corporateId,
@@ -275,7 +261,6 @@ exports.accountStatement = function (corporateId,affiliateCode,accountNumber, st
 
 //account payment
 exports.accountPayment = function (affiliateCode, secureHash, clientId,amount,currency,rate_type, batchSequence,batchAmount,transactionAmount,batchid,transactioncount,batchcount, transactionid,debittype,totalbatches, execution_date, request_id, request_type, token ){
-    getToken()
  let accUrl = '/corporateapi/merchant/payment'
     let payload = {
         "secureHash": secureHash,
