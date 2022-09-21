@@ -37,11 +37,13 @@ app.use(cors());
 const tokenRoute = require('./routes/token');
 const accountRoute = require('./routes/account');
 const paymentRoute = require('./routes/payment');
+const userRoute = require('./routes/user');
 
 
 app.use('/api', tokenRoute);
 app.use('/api', accountRoute);
 app.use('/api', paymentRoute);
+app.use('/api', userRoute);
 
 
 app.get('/', (req, res)=>{

@@ -11,6 +11,10 @@ let userSchema = new Schema({
     password: {
         type: String,
     },
+    verified: {
+      type: Boolean,
+        default: false
+    },
     created_at: {
         type: Date,
     }
