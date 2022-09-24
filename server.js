@@ -29,6 +29,9 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
+//passport config
+require('./auth/passport')(passport)
+
 app.use(cors());
 
 

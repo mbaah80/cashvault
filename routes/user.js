@@ -49,19 +49,20 @@ router.post('/register', (req, res)=>{
                         res.status(500).json({message: "internal server error", error: err});
                     };
                     if (user){
-                        let subject = 'Welcome to Centralize Bank';
-                        let text = `Hello ${user.name}, Please click on the link below to verify your account. ${config.redirectUrl}/verify/${user.id}/${token}`;
-                        sendEmail(user.email, subject, text)
-                            .then(()=>{
-                                res.status(200).json({
-                                    message: 'user created successfully',
-                                    user:user,
-                                    token: token,
-                                });
-                            })
-                            .catch((err)=>{
-                                res.status(500).json({message: "internal server error send email", error: err});
-                            })
+                        res.status(201).json({message: 'user created successfully', user: user, token: token});
+                        // let subject = 'Welcome to Centralize Bank';
+                        // let text = `Hello ${user.name}, Please click on the link below to verify your account. ${config.redirectUrl}/verify/${user.id}/${token}`;
+                        // sendEmail(user.email, subject, text)
+                        //     .then(()=>{
+                        //         res.status(200).json({
+                        //             message: 'user created successfully',
+                        //             user:user,
+                        //             token: token,
+                        //         });
+                        //     })
+                        //     .catch((err)=>{
+                        //         res.status(500).json({message: "internal server error send email", error: err});
+                        //     })
                     }
                 })
             })
@@ -75,7 +76,7 @@ router.post('/login', (req, res)=>{
         if(err) {
             res.status(500).json({message: "internal server error", error: err});
         }else if(!user){
-            res.status(404).json({message: 'user not found'});
+            res.status(404).json({message: 'Login credentials are not correct'});
         }else{
             bcrypt.compare(password, user.password, (err, result)=>{
                 if(err) {
@@ -89,7 +90,7 @@ router.post('/login', (req, res)=>{
                         token: token,
                     });
                 }else{
-                    res.status(401).json({message: 'Login Credentials are not correct'});
+                    res.status(401).json({message: 'Login credentials are not correct'});
                 }
             })
         }

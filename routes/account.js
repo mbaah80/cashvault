@@ -103,7 +103,7 @@ router.post('/createAccount', passport.authenticate('jwt', {session:false}),(req
                                            "state": state,
                                            "street": street,
                                            "secureHash": secureHash,
-                                           UserID: req.user._id
+                                           UserID: req.user.id
                                        })
                                        account.save().then((account)=>{
                                              res.status(200).json({
@@ -455,101 +455,140 @@ router.post('/accountEnquiry', (req, res)=>{
 })
 
 //account transfer
-router.post('/accountTransfer', passport.authenticate('jwt', {session:false}),(req, res)=>{
-    let bank = "ecobank";
-    if(bank === 'ecobank'){
-        try {
-            let {bank, requestId, affiliateCode, accountNo, clientId, companyName, destinationBankCode, secureHash} = req.body;
-            let accTransfer = '/corporateapi/merchant/accountinquiry'
-            let tokenUrl = '/corporateapi/user/token'
-            let payload = {
-                bank: bank,
-                "requestId": requestId,
-                "affiliateCode": affiliateCode,
-                "accountNo": accountNo,
-                "clientId": clientId,
-                "companyName": companyName,
-                "destinationBankCode": destinationBankCode,
-                "secureHash": secureHash
-            }
+// router.post('/accountTransfer', passport.authenticate('jwt', {session:false}),(req, res)=>{
+//     let bank = "ecobank";
+//     if(bank === 'ecobank'){
+//         try {
+//             let {bank, requestId, affiliateCode, accountNo, clientId, companyName, destinationBankCode, secureHash} = req.body;
+//             let accTransfer = '/corporateapi/merchant/accountinquiry'
+//             let tokenUrl = '/corporateapi/user/token'
+//             let payload = {
+//                 bank: bank,
+//                 "requestId": requestId,
+//                 "affiliateCode": affiliateCode,
+//                 "accountNo": accountNo,
+//                 "clientId": clientId,
+//                 "companyName": companyName,
+//                 "destinationBankCode": destinationBankCode,
+//                 "secureHash": secureHash
+//             }
+//
+//             let body = {
+//                 "userId": config.userId,
+//                 "password": config.password
+//             }
+//             axios.post(config.EcobankBaseUrl + tokenUrl, body,{
+//                 headers: {
+//                     Origin: "developer.ecobank.com",
+//                     "Content-Type": "application/json",
+//                     Accept: "application/json",
+//                 }
+//             }).then((response)=>{
+//                 if (response.data.token){
+//                     axios.post(config.EcobankBaseUrl + accTransfer, payload,{
+//                         headers: {
+//                             Origin: "developer.ecobank.com",
+//                             "Content-Type": "application/json",
+//                             Accept: "application/json",
+//                             Authorization:"Bearer " + response.data.token
+//                         }
+//                     }).then((response)=>{
+//                         res.status(200).json({
+//                             message: 'success',
+//                             response: response.data
+//                         })
+//                         // let balance = new accountBalance()
+//                         // balance.save((balance, err)=>{
+//                         //     if(err) {
+//                         //         res.status(500).json({
+//                         //             message: 'error',
+//                         //         })
+//                         //     }else{
+//                         //         res.status(200).json({
+//                         //             message: 'success',
+//                         //             balance
+//                         //         })
+//                         //     }
+//                         // })
+//                     }).catch((err)=>{
+//                         res.status(500).json({
+//                             message: 'error',
+//                             error: err
+//                         })
+//                     })
+//                 }else{
+//                     res.status(500).json({
+//                         message: 'error',
+//                     })
+//                 }
+//             }).catch((err)=>{
+//                 res.status(500).json({
+//                     message: 'error',
+//                     error: err
+//                 })
+//             })
+//         }
+//         catch (error) {
+//             res.status(500).json({
+//                 message: "internal server error",
+//                 error: error
+//             })
+//         }
+//     }
+//     else if (bank === 'zenith') {
+//         //zenith bank api
+//     } else if (bank === 'gtbank') {
+//         //gtbank api
+//     }else if (bank === 'access') {
+//         //access bank api
+//     } else if (bank === 'firstbank') {
+//         //firstbank api
+//     } else if (bank === 'unionbank') {
+//         //unionbank api
+//     } else if (bank === 'standardChartered') {
+//         //standard chartered bank api
+//     } else{
+//         //telecom api
+//     }
+// })
 
-            let body = {
-                "userId": config.userId,
-                "password": config.password
-            }
-            axios.post(config.EcobankBaseUrl + tokenUrl, body,{
-                headers: {
-                    Origin: "developer.ecobank.com",
-                    "Content-Type": "application/json",
-                    Accept: "application/json",
-                }
-            }).then((response)=>{
-                if (response.data.token){
-                    axios.post(config.EcobankBaseUrl + accTransfer, payload,{
-                        headers: {
-                            Origin: "developer.ecobank.com",
-                            "Content-Type": "application/json",
-                            Accept: "application/json",
-                            Authorization:"Bearer " + response.data.token
-                        }
-                    }).then((response)=>{
-                        res.status(200).json({
-                            message: 'success',
-                            response: response.data
-                        })
-                        // let balance = new accountBalance()
-                        // balance.save((balance, err)=>{
-                        //     if(err) {
-                        //         res.status(500).json({
-                        //             message: 'error',
-                        //         })
-                        //     }else{
-                        //         res.status(200).json({
-                        //             message: 'success',
-                        //             balance
-                        //         })
-                        //     }
-                        // })
-                    }).catch((err)=>{
-                        res.status(500).json({
-                            message: 'error',
-                            error: err
-                        })
-                    })
-                }else{
-                    res.status(500).json({
-                        message: 'error',
-                    })
-                }
-            }).catch((err)=>{
-                res.status(500).json({
-                    message: 'error',
-                    error: err
-                })
-            })
-        }
-        catch (error) {
+//get acctount
+router.get('/getAccount', (req, res)=>{
+    let email = req.body.email;
+    accountOpening.findOne({email: email}, (err, account)=>{
+        if(err){
             res.status(500).json({
-                message: "internal server error",
-                error: error
+                message: 'Internal server error',
+            })
+        } else if (account){
+            res.status(200).json({
+                message: 'success',
+                account: account.email
             })
         }
-    }
-    else if (bank === 'zenith') {
-        //zenith bank api
-    } else if (bank === 'gtbank') {
-        //gtbank api
-    }else if (bank === 'access') {
-        //access bank api
-    } else if (bank === 'firstbank') {
-        //firstbank api
-    } else if (bank === 'unionbank') {
-        //unionbank api
-    } else if (bank === 'standardChartered') {
-        //standard chartered bank api
-    } else{
-        //telecom api
-    }
+        else{
+            res.status(404).json({
+                message: 'Account not found'
+            })
+        }
+ })
+})
+
+//get protected account
+router.get('/getProtectedAccount', passport.authenticate('jwt', {session:false}), (req, res)=>{
+    accountOpening.findOne({email: req.body.email}, (err, account)=>{
+        if(err){
+            res.status(500).json({
+                message: 'Account not found',
+                error: err
+            })
+        }else{
+            res.status(200).json({
+                message: 'success',
+                account : account
+            })
+        }
+ })
 })
 
 
