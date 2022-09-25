@@ -49,7 +49,11 @@ router.post('/register', (req, res)=>{
                         res.status(500).json({message: "internal server error", error: err});
                     };
                     if (user){
-                        res.status(201).json({message: 'user created successfully', user: user, token: token});
+                        let newUser = {
+                            name: user.name,
+                            email: user.email,
+                        }
+                        res.status(201).json({message: 'user created successfully', user: newUser, token:'JWT ' + token});
                         // let subject = 'Welcome to Centralize Bank';
                         // let text = `Hello ${user.name}, Please click on the link below to verify your account. ${config.redirectUrl}/verify/${user.id}/${token}`;
                         // sendEmail(user.email, subject, text)
@@ -84,10 +88,15 @@ router.post('/login', (req, res)=>{
                 };
                 if(result){
                     const token = jwt.sign({user}, config.secret, {expiresIn: 86400});
+                    //don't send user password
+                    let newUser = {
+                        name: user.name,
+                        email: user.email,
+                    }
                     res.status(200).json({
                         message: 'user logged in successfully',
-                        user:user,
-                        token: token,
+                        user:newUser,
+                        token:  'JWT ' + token,
                     });
                 }else{
                     res.status(401).json({message: 'Login credentials are not correct'});

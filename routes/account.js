@@ -553,7 +553,7 @@ router.post('/accountEnquiry', (req, res)=>{
 // })
 
 //get acctount
-router.get('/getAccount', (req, res)=>{
+router.post('/getAccount', (req, res)=>{
     let email = req.body.email;
     accountOpening.findOne({email: email}, (err, account)=>{
         if(err){
