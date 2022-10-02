@@ -86,6 +86,9 @@ const accountSchema = new mongoose.Schema({
     secureHash: {
         type: String,
     },
+    UserID: {
+        type: String,
+    },
     createdAt: {type: Date, default: Date.now},
 })
 

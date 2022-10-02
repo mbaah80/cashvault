@@ -103,7 +103,7 @@ router.post('/createAccount', passport.authenticate('jwt', {session:false}),(req
                                            "state": state,
                                            "street": street,
                                            "secureHash": secureHash,
-                                           UserID: req.user.id
+                                           UserID: req.user.id //will check user id first
                                        })
                                        account.save().then((account)=>{
                                              res.status(200).json({
@@ -575,20 +575,19 @@ router.post('/getAccount', (req, res)=>{
 })
 
 //get protected account
-router.get('/getProtectedAccount', passport.authenticate('jwt', {session:false}), (req, res)=>{
-    accountOpening.findOne({email: req.body.email}, (err, account)=>{
-        if(err){
-            res.status(500).json({
-                message: 'Account not found',
-                error: err
+router.get('/fetchUserAccount', passport.authenticate('jwt', {session:false}), (req, res)=>{
+    accountOpening.find({UserID: req.user._id}, (err, account)=> {
+        if (err) {
+            res.status(404).json({
+                message: 'User account not found'
             })
-        }else{
+        } else  {
             res.status(200).json({
                 message: 'success',
-                account : account
+                account: account
             })
         }
- })
+    })
 })
 
 

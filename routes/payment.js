@@ -3,6 +3,7 @@ let router = express.Router();
 let config = require('../config/keys');
 let axios = require('axios');
 const accountPayment = require("../model/payment");
+const deposit = require("../model/deposit");
 const passport = require("passport");
 
 //account payment
@@ -502,7 +503,7 @@ router.post('/cashDeposit', passport.authenticate('jwt', {session:false}),(req, 
     if(bank === "ecobank"){
         let tokenUrl = '/corporateapi/user/token'
         let accUrl = '/agencybanking/services/thirdpartyagencybanking/cashin'
-        let {sendername, sourceCode, subagentcode, senderphone,senderaccount, thirdpartyphonenumber, ccy, narration, amount, requestId, affcode,sourceIp,channel,requesttype,agentcode } = req.body;
+        let {sendername, sourceCode, subagentcode, senderphone,senderaccount, thirdpartyphonenumber, ccy, narration, amount, requestId, affcode,sourceIp,channel,requesttype,agentcode, source } = req.body;
         let body = {
             "userId": config.userId,
             "password": config.password
@@ -544,23 +545,41 @@ router.post('/cashDeposit', passport.authenticate('jwt', {session:false}),(req, 
                         }
                     })
                         .then((response)=>{
-                            res.status(200).json({
-                                message: "transaction gone through successfully",
+
+                            let payment = new deposit({
+                                sendername: sendername,
+                                subagentcode: subagentcode,
+                                senderphone: senderphone,
+                                senderaccount: senderaccount,
+                                thirdpartyphonenumber: thirdpartyphonenumber,
+                                ccy: ccy,
+                                narration: narration,
+                                amount: amount,
+                                source: source,
+                                channel: channel,
+                                header: {
+                                    affcode: affcode,
+                                    requestId: requestId,
+                                    sourceCode: sourceCode,
+                                    sourceIp: sourceIp,
+                                    channel: channel,
+                                    requesttype: requesttype,
+                                    agentcode: agentcode
+                                }
                             })
-                            // let payment = new accountPayment()
-                            // payment.save((payment, err)=>{
-                            //     if(err) {
-                            //         res.status(500).json({
-                            //             message: "Error saving payment",
-                            //             error: err
-                            //         })
-                            //     }else{
-                            //         res.status(200).json({
-                            //             message: "momo payment successfully",
-                            //             data: payment
-                            //         })
-                            //     }
-                            // })
+                            payment.save((payment, err)=>{
+                                if(err) {
+                                    res.status(500).json({
+                                        message: "Error saving payment",
+                                        error: err
+                                    })
+                                }else{
+                                    res.status(200).json({
+                                        message: "transaction gone through successfully",
+                                        data: payment
+                                    })
+                                }
+                            })
                         })
                         .catch((err)=>{
                             res.status(400).json({
@@ -598,6 +617,7 @@ router.post('/cashDeposit', passport.authenticate('jwt', {session:false}),(req, 
 router.post('/selfTransfer', passport.authenticate('jwt', {session:false}),(req, res) => {
     let bank = req.body.bank;
     if(bank === "ecobank"){
+        res.send(req.body)
         let tokenUrl = '/corporateapi/user/token'
         let accUrl = '/agencybanking/services/thirdpartyagencybanking/selftransfer'
         let {sourceaccount, destinationaccount, ccy, amount, requestId, sourceCode, affcode,sourceIp,channel,requesttype,agentcode } = req.body;
@@ -641,20 +661,23 @@ router.post('/selfTransfer', passport.authenticate('jwt', {session:false}),(req,
                             res.status(200).json({
                                 message: "transaction gone through successfully",
                             })
-                            // let payment = new accountPayment()
-                            // payment.save((payment, err)=>{
-                            //     if(err) {
-                            //         res.status(500).json({
-                            //             message: "Error saving payment",
-                            //             error: err
-                            //         })
-                            //     }else{
-                            //         res.status(200).json({
-                            //             message: "momo payment successfully",
-                            //             data: payment
-                            //         })
-                            //     }
-                            // })
+                            let newDeposit = new deposit({
+                                sourceaccount: sourceaccount,
+                                destinationaccount: destinationaccount,
+                                ccy: ccy,
+                                amount: amount,
+                                transactiontoken: response.data.token,
+                                "header": {
+                                    affcode: affcode,
+                                    requestId: requestId,
+                                    requestToken: response.data.token,
+                                    sourceCode: sourceCode,
+                                    sourceIp: sourceIp,
+                                    channel: channel,
+                                    requesttype: requesttype,
+                                    agentcode: agentcode
+                                }
+                            })
                         })
                         .catch((err)=>{
                             res.status(400).json({
@@ -687,6 +710,7 @@ router.post('/selfTransfer', passport.authenticate('jwt', {session:false}),(req,
         //telecom api
     }
 })
+
 
 
 
