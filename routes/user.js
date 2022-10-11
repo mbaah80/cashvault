@@ -43,7 +43,7 @@ router.post('/register', (req, res)=>{
                     res.status(500).json({message: "internal server error", error: err});
                 };
                 newUser.password = hash;
-                const token = jwt.sign({user}, config.secret, {expiresIn: 86400});
+                const token = jwt.sign({user}, config.secret, {expiresIn: '24h'});
                 newUser.save((err, user)=>{
                     if(err) {
                         res.status(500).json({message: "internal server error", error: err});
@@ -87,7 +87,7 @@ router.post('/login', (req, res)=>{
                     res.status(500).json({message: "internal server error", error: err});
                 };
                 if(result){
-                    const token = jwt.sign({user}, config.secret, {expiresIn: 86400});
+                    const token = jwt.sign({user}, config.secret, {expiresIn: '24h'});
                     //don't send user password
                     let newUser = {
                         name: user.name,

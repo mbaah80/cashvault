@@ -4,6 +4,8 @@ let config = require('../config/urls');
 let axios = require('axios');
 let router = express.Router();
 let balance = require('../model/balance');
+let mtnRequestToPay = require('../model/mtnRequestToPay');
+let mtnRequestToWithdraw = require('../model/mtnRequestToWithdraw');
 
 
 //AccountBalance
@@ -11,7 +13,7 @@ router.get('/accountbalance', passport.authenticate('jwt', { session: false }), 
  let url = 'v1_0/account/balance';
  let headers = {
         'Authorization': 'Basic ' + req.user.token,
-        'Ocp-Apim-Subscription-Key': config.mtn.apiKey,
+        'Ocp-Apim-Subscription-Key': config.mtnPrimaryKey,
         'X-Target-Environment': 'sandbox'
  }
  axios.get(config.mtnBaseUrl + url, { headers: headers })
@@ -40,7 +42,7 @@ router.get('/transactionStatus/:referenceId', passport.authenticate('jwt', { ses
     let headers = {
         'Authorization': 'Basic ' + req.user.token,
         'X-Target-Environment': 'sandbox',
-        'Ocp-Apim-Subscription-Key': config.mtnApiKey
+        'Ocp-Apim-Subscription-Key': config.mtnPrimaryKey
     }
     axios.get(config.mtnBaseUrl + url, { headers: headers })
         .then(response => {
@@ -71,11 +73,10 @@ router.get('/WithdrawTransactionStatus/:referenceId', passport.authenticate('jwt
 
 
 //Request to Pay
-router.post('/RequesttoPay', passport.authenticate('jwt', {session:false}),(req, res) => {
+router.post('/requestToPay', (req, res) => {
     try {
         let {amount, currency, externalId, partyIdType, partyId, payerMessage, payeeNote} = req.body
         let url ='v1_0/requesttopay'
-        let tokenUrl = 'token'
         let payload = {
             "amount": amount,
             "currency": currency,
@@ -88,36 +89,58 @@ router.post('/RequesttoPay', passport.authenticate('jwt', {session:false}),(req,
             "payeeNote": payeeNote
         }
 
-        axios.post(config.mtnBaseUrl + tokenUrl, {
+        axios.post(config.mtnBaseUrl + 'token', null,{
             headers: {
-                'Authorization': 'Basic ' + Buffer.from(config.mtnApiKey + ':' + config.mtnSecretKey).toString('base64'),
-                'Ocp-Apim-Subscription-Key': config.mtnApiKey,
+                'Authorization': 'Basic ' + Buffer.from(config.Username + ':' + config.Password).toString('base64'),
+                'Ocp-Apim-Subscription-Key': config.mtnPrimaryKey
             }
         })
             .then((response) => {
-            axios.post(config.mtnBaseUrl + url, payload, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': 'Basic ' + response.data.access_token,
-                    'X-Reference-Id': externalId,
-                    'X-Target-Environment': 'sandbox',
-                    'Ocp-Apim-Subscription-Key': config.mtnApiKey
-                }
-            })
+                console.log(response.data, 'token')
+                res.status(200).json({data: response.data})
+                axios.post(config.mtnBaseUrl + url, payload, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Basic ' + response.data.access_token,
+                        'X-Reference-Id': externalId,
+                        'X-Target-Environment': 'sandbox',
+                        'Ocp-Apim-Subscription-Key': config.mtnPrimaryKey
+                    }
+                })
                 .then(response => {
-                    res.json(response.data)
+                    res.status(200).json({data: response.data})
+                    let pay = new mtnRequestToPay({
+                        amount: amount,
+                        currency: currency,
+                        externalId: externalId,
+                        partyIdType: partyIdType,
+                        partyId: partyId,
+                        payerMessage: payerMessage,
+                        payeeNote: payeeNote,
+                    })
+                    pay.save((err, pay) => {
+                        if (err) {
+                            res.status(400).json({error: err})
+                        }
+                        if(pay){
+                            res.status(200).json({data: pay, message: 'Request to pay successful'})
+                        }
+                    })
                 })
                 .catch(error => {
-                    res.json(error.response.data)
+                    res.status(401).json({error: error.response.data})
                 })
+        }).catch(error => {
+            res.status(401).json({error: error})
         })
-    }catch (error) {
-        console.log(error);
+    }
+    catch (error) {
+        res.status(401).json({error: error})
     }
 })
 
 //Request to Withdraw
-router.post('/requesttowithdraw', passport.authenticate('jwt', {session:false}),(req, res) => {
+router.post('/requestToWithdraw', passport.authenticate('jwt', {session:false}),(req, res) => {
     try {
         let {amount, currency, externalId, partyIdType, partyId, payerMessage, payeeNote} = req.body
         let url ='v1_0/requesttowithdraw'
@@ -136,8 +159,8 @@ router.post('/requesttowithdraw', passport.authenticate('jwt', {session:false}),
 
         axios.post(config.mtnBaseUrl + tokenUrl, {
             headers: {
-                'Authorization': 'Basic ' + Buffer.from(config.mtnApiKey + ':' + config.mtnSecretKey).toString('base64'),
-                'Ocp-Apim-Subscription-Key': config.mtnApiKey,
+                'Authorization': 'Basic ' + Buffer.from(config.Username + ':' + config.Password).toString('base64'),
+                'Ocp-Apim-Subscription-Key': config.mtnPrimaryKey,
             }
         })
             .then((response) => {
@@ -147,11 +170,27 @@ router.post('/requesttowithdraw', passport.authenticate('jwt', {session:false}),
                         'Authorization': 'Basic ' + response.data.access_token,
                         'X-Reference-Id': externalId,
                         'X-Target-Environment': 'sandbox',
-                        'Ocp-Apim-Subscription-Key': config.mtnApiKey
+                        'Ocp-Apim-Subscription-Key': config.mtnPrimaryKey
                     }
                 })
                     .then(response => {
-                        res.json(response.data)
+                        let withdraw = new mtnRequestToWithdraw({
+                            amount: amount,
+                            currency: currency,
+                            externalId: externalId,
+                            partyIdType: partyIdType,
+                            partyId: partyId,
+                            payerMessage: payerMessage,
+                            payeeNote: payeeNote,
+                        })
+                        withdraw.save((err, pay) => {
+                            if (err) {
+                                res.status(400).json({error: err})
+                            }
+                            if(pay){
+                                res.status(200).json({data: pay, message: 'Request to withdraw successful'})
+                            }
+                        })
                     })
                     .catch(error => {
                         res.json(error.response.data)

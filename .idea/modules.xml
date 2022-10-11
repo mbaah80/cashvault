@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/.idea/cashvault.iml" filepath="$PROJECT_DIR$/.idea/cashvault.iml" />
+      <module fileurl="file://$PROJECT_DIR$/../cashvaultweb/queueless/.idea/queueless.iml" filepath="$PROJECT_DIR$/../cashvaultweb/queueless/.idea/queueless.iml" />
     </modules>
   </component>
 </project>
