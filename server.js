@@ -42,6 +42,7 @@ const paymentRoute = require('./routes/payment');
 const userRoute = require('./routes/user');
 const mtnRoute = require('./routes/mtn');
 const verifyRoute = require('./routes/verify');
+const loanRoute = require('./routes/loan');
 
 
 app.use('/api', tokenRoute);
@@ -50,6 +51,7 @@ app.use('/api', paymentRoute);
 app.use('/api', userRoute);
 app.use('/api', mtnRoute);
 app.use('/api', verifyRoute);
+app.use('/api', loanRoute);
 
 
 app.get('/', (req, res)=>{

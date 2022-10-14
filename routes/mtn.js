@@ -92,10 +92,10 @@ router.post('/requestToPay', (req, res) => {
         axios.post(config.mtnBaseUrl + 'token', null,{
             headers: {
                 'Authorization': 'Basic ' + Buffer.from(config.Username + ':' + config.Password).toString('base64'),
+                'X-Target-Environment': 'sandbox',
                 'Ocp-Apim-Subscription-Key': config.mtnPrimaryKey
             }
-        })
-            .then((response) => {
+        }).then((response) => {
                 console.log(response.data, 'token')
                 res.status(200).json({data: response.data})
                 axios.post(config.mtnBaseUrl + url, payload, {
