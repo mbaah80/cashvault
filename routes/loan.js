@@ -33,6 +33,10 @@ router.post('/requestLoan', passport.authenticate('jwt', {session:'false'}),(req
         loanRepayment = loanRepayment.toFixed(2);
 
         let newRequestLoan = new requestLoan({
+            name: req.body.name,
+            address: req.body.address,
+            email: req.body.email,
+            phone: req.body.phone,
             loanAmount: req.body.loanAmount,
             repaymentAmount: loanRepayment,
             loanPurpose: req.body.loanPurpose,
@@ -168,7 +172,58 @@ router.get('/getUserLoan', passport.authenticate('jwt', { session: 'false' }), (
     })
 })
 
-//get all loans and check if loanTerm is passed
+router.get('/getLoanPayment', passport.authenticate('jwt', { session: 'false' }), (req, res) => {
+    loanPaymentSchema.find({userId: req.body.userId}, (err, loanPaymentSchema) => {
+        if (err) {
+            res.json({ success: false, msg: 'Failed to get loan payment' });
+        } else {
+            res.json({ success: true, loanPaymentSchema: loanPaymentSchema });
+        }
+    })
+})
+
+router.get('/loan/:id', passport.authenticate('jwt', { session: 'false' }), (req, res) => {
+    requestLoan.findById(req.params.id, (err, requestLoan) => {
+        if (err) {
+            res.json({ success: false, msg: 'Failed to get request loan' });
+        } else {
+            res.json({ success: true, requestLoan: requestLoan });
+        }
+    })
+})
+
+router.get('/loanPayment/:id', passport.authenticate('jwt', { session: 'false' }), (req, res) => {
+    loanPaymentSchema.findById(req.params.id, (err, loanPaymentSchema) => {
+        if (err) {
+            res.json({ success: false, msg: 'Failed to get loan payment' });
+        } else {
+            res.json({ success: true, loanPaymentSchema: loanPaymentSchema });
+        }
+    })
+})
+
+router.get('/deleteLoan/:id', passport.authenticate('jwt', { session: 'false' }), (req, res) => {
+    requestLoan.findByIdAndDelete(req.params.id, (err, requestLoan) => {
+        if (err) {
+            res.json({ success: false, msg: 'Failed to delete request loan' });
+        } else {
+            res.json({ success: true, msg: 'Request loan deleted successfully' });
+        }
+    })
+})
+
+router.get('/deleteLoanPayment/:id', passport.authenticate('jwt', { session: 'false' }), (req, res) => {
+    loanPaymentSchema.findByIdAndDelete(req.params.id, (err, loanPaymentSchema) => {
+        if (err) {
+            res.json({ success: false, msg: 'Failed to delete loan payment' });
+        } else {
+            res.json({ success: true, msg: 'Loan payment deleted successfully' });
+        }
+    })
+})
+
+
+
 passedLoanTerm = (req, res, next) => {
     try {
         requestLoan.find({}, (err, requestLoan) => {
@@ -193,7 +248,6 @@ passedLoanTerm = (req, res, next) => {
         res.status(500).json({ success: false, msg: 'Server error' });
     }
 }
-
 deletePaidLoan = (req, res, next) => {
  try {
      requestLoan.find({}, (err, requestLoan) => {
@@ -210,6 +264,9 @@ deletePaidLoan = (req, res, next) => {
  }  catch (err) {
      res.status(500).json({ success: false, msg: 'Server error' });
  }
+}
+userCreditScore = (req, res, next) => {
+    console.log('userCreditScore');
 }
 
 schedule.scheduleJob('0 0 1 * *', function(){

@@ -2,6 +2,18 @@ let mongoose = require('mongoose');
 let Schema = mongoose.Schema;
 
 let RequestLoanSchema = new Schema({
+    name: {
+        type: String,
+    },
+    address: {
+        type: String,
+    },
+    email: {
+        type: String,
+    },
+    phone: {
+        type: String,
+    },
     loanAmount: {
         type: Number,
     },
