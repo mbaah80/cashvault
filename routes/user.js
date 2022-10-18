@@ -54,19 +54,19 @@ router.post('/register', (req, res)=>{
                             email: user.email,
                         }
                         res.status(201).json({message: 'user created successfully', user: newUser, token:'JWT ' + token});
-                        // let subject = 'Welcome to Centralize Bank';
-                        // let text = `Hello ${user.name}, Please click on the link below to verify your account. ${config.redirectUrl}/verify/${user.id}/${token}`;
-                        // sendEmail(user.email, subject, text)
-                        //     .then(()=>{
-                        //         res.status(200).json({
-                        //             message: 'user created successfully',
-                        //             user:user,
-                        //             token: token,
-                        //         });
-                        //     })
-                        //     .catch((err)=>{
-                        //         res.status(500).json({message: "internal server error send email", error: err});
-                        //     })
+                        let subject = 'Welcome to Centralize Bank';
+                        let text = `Hello ${user.name}, Please click on the link below to verify your account. ${config.redirectUrl}/verify/${user.id}/${token}`;
+                        sendEmail(user.email, subject, text)
+                            .then(()=>{
+                                res.status(200).json({
+                                    message: 'user created successfully',
+                                    user:user,
+                                    token: token,
+                                });
+                            })
+                            .catch((err)=>{
+                                res.status(500).json({message: "internal server error send email", error: err});
+                            })
                     }
                 })
             })

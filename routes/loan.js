@@ -4,6 +4,26 @@ let passport = require('passport');
 let schedule = require('node-schedule');
 let requestLoan = require('../model/requestloan');
 let loanPaymentSchema = require('../model/loanPayment');
+let nodemailer = require('nodemailer');
+
+let sendEmail = async (email, subject, text) => {
+    let transporter = nodemailer.createTransport({
+        // service: 'gmail',
+        host: 'smtp.gmail.com',
+        port: 465,
+        secure: true,
+        auth:{
+            user: "baahmichael903@gmail.com",
+            pass: "Baahmichael903.@"
+        }
+    });
+    await transporter.sendMail({
+        from: 'do-not-reply@centralizeBank.com',
+        to: email,
+        subject: subject,
+        text: text
+    })
+}
 
 router.post('/requestLoan', passport.authenticate('jwt', {session:'false'}),(req, res) => {
     try {
@@ -59,6 +79,7 @@ router.post('/requestLoan', passport.authenticate('jwt', {session:'false'}),(req
                             res.json({ success: false, msg: 'Failed to request loan' });
                         } else {
                             res.status(200).json({ success: true, msg: 'Loan requested, waiting for approval' });
+                            sendEmail(req.body.email, 'Loan Request', 'Your loan request has been received, we will get back to you shortly');
                         }
                     });
                 }
