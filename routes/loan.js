@@ -8,13 +8,16 @@ let nodemailer = require('nodemailer');
 
 let sendEmail = async (email, subject, text) => {
     let transporter = nodemailer.createTransport({
-        // service: 'gmail',
-        host: 'smtp.gmail.com',
-        port: 465,
-        secure: true,
+        // // service: 'gmail',
+        // host: 'smtp.gmail.com',
+        // port: 465,
+        // secure: true,
+        host: "smtp.ethereal.email",
+        port: 587,
+        secure: false, // true for 465, false for other ports
         auth:{
-            user: "baahmichael903@gmail.com",
-            pass: "Baahmichael903.@"
+            user: 'davon.pagac63@ethereal.email',
+            pass: 'Hane94SBhmgRZkdyDZ'
         }
     });
     await transporter.sendMail({
@@ -25,7 +28,7 @@ let sendEmail = async (email, subject, text) => {
     })
 }
 
-router.post('/requestLoan', passport.authenticate('jwt', {session:'false'}),(req, res) => {
+router.post('/requestLoan', (req, res) => {
     try {
         //calculate interest rate 5% of loan amount
         let interest = 0.05;
@@ -79,7 +82,8 @@ router.post('/requestLoan', passport.authenticate('jwt', {session:'false'}),(req
                             res.json({ success: false, msg: 'Failed to request loan' });
                         } else {
                             res.status(200).json({ success: true, msg: 'Loan requested, waiting for approval' });
-                            sendEmail(req.body.email, 'Loan Request', 'Your loan request has been received, we will get back to you shortly');
+                            let email = "davon.pagac63@ethereal.email"
+                            sendEmail(email, 'Loan Request', 'Your loan request has been received, we will get back to you shortly');
                         }
                     });
                 }
